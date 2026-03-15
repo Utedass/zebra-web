@@ -27,6 +27,7 @@ jobs:
           docker build \
             -t ghcr.io/utedass/zebra-webb:latest \
             -t ghcr.io/utedass/zebra-webb:${{ github.sha }} \
+            .
 
       - name: Push image
         run: |
