@@ -2,7 +2,10 @@ name: Build and Publish Container
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -24,11 +27,22 @@ jobs:
 
       - name: Build image
         run: |
-          docker build \
-            -t ghcr.io/utedass/zebra-webb:latest \
-            -t ghcr.io/utedass/zebra-webb:${{ github.sha }} \
-            .
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF_NAME#v}
+            docker build \
+              -t ghcr.io/utedass/zebra-webb:latest \
+              -t ghcr.io/utedass/zebra-webb:$VERSION \
+              .
+          else
+            docker build \
+              -t ghcr.io/utedass/zebra-webb:latest \
+              .
+          fi
 
       - name: Push image
         run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF_NAME#v}
+            docker push ghcr.io/utedass/zebra-webb:$VERSION
+          fi
           docker push ghcr.io/utedass/zebra-webb:latest
