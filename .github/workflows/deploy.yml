@@ -13,18 +13,20 @@ jobs:
       packages: write
 
     steps:
-      - uses: action/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: Utedass
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build image
         run: |
-          docker build -t ghcr.io/utedass/zebra-webb:latest .
+          docker build \
+            -t ghcr.io/utedass/zebra-webb:latest \
+            -t ghcr.io/utedass/zebra-webb:${{ github.sha }} \
 
       - name: Push image
         run: |
