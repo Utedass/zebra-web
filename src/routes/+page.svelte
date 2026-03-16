@@ -11,6 +11,7 @@
 	const etiketter = [
 		{ display: 'Frysdag', label_id: 'frysdag' },
 		{ display: 'Dagens datum bara', label_id: 'today' }
+		//{ display: 'Experiment', label_id: 'experiment' }
 	];
 </script>
 

@@ -6,17 +6,26 @@ export const actions = {
         const data = await request.formData();
         const label_id = data.get("label_id");
         const qty: number = Number(data.get("qty") ?? "1");
+        let label: string = "";
 
         switch (label_id) {
             case "frysdag":
                 console.log("Printing frysdag label.");
-                console.log(labelFrysdag(qty));
-                zplCommand(labelFrysdag());
+                label = labelFrysdag(qty);
+                console.log(label);
+                //zplCommand(label);
                 break;
             case "today":
                 console.log("Printing today label.");
-                console.log(labelToday(qty));
-                zplCommand(labelToday());
+                label = labelToday(qty);
+                console.log(label);
+                zplCommand(label);
+                break;
+            case "experiment": 
+                console.log("Experiments running");
+                label = labelExperiment(qty);
+                console.log(label);
+                //zplCommand(label);
                 break;
             default:
                 console.log(`Unsupported label: ${label_id}`);
@@ -24,13 +33,26 @@ export const actions = {
     }
 } satisfies Actions;
 
+function labelExperiment(qty = 1){
+    const zplCommand = `
+^XA
+^PQ${qty}
+^FO50,50
+^A0N,40,40
+^FDTEST^FS
+^XZ
+`;
+    return zplCommand;
+}
 
-function labelFrysdag(num = 1) {
+
+function labelFrysdag(qty = 1) {
     const now = new Date();
     const timestring = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
 
     const zplCommand = `
 ^XA
+^PQ${qty}
 ^LH16,8
 ^FO100,15
 ^AB,20
@@ -39,24 +61,49 @@ function labelFrysdag(num = 1) {
 ^A0,40
 ^FD${timestring}^FS
 ^LH0,0
-^PQ${num}
 ^XZ
 `;
     return zplCommand;
 }
 
-function labelToday(num = 1) {
+function labelToday(qty = 1) {
     const now = new Date();
     const timestring = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
 
     const zplCommand = `
+CT~~CD,~CC^~CT~
 ^XA
-^LH16,8
-^FO50,50
-^A0,40
-^FD${timestring}^FS
+~TA000
+~JSN
+^LT8
+^MNW
+^MTT
+^PON
+^PMN
 ^LH0,0
-^PQ${num}
+^JMA
+^PR6,6
+~SD19
+^JUS
+^LRN
+^CI27
+^PA0,1,1,0
+^XZ
+
+^XA
+^PQ${qty}
+^MMT
+^PW330
+^LL102
+^LS0
+^FPH,8
+^FT25,64
+^A0N,39,38
+^FH\\
+^CI28
+^FD${timestring}
+^FS
+^CI27
 ^XZ
 `;
     return zplCommand;
