@@ -8,7 +8,6 @@
 <article class="prose">
 	<h1>Din etikettstation i webben</h1>
 </article>
-Den här texten då?
 
 <form method="POST" use:enhance>
 	<!--
