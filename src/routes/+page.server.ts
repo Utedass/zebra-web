@@ -2,39 +2,51 @@ import type { Actions } from './$types';
 import net from 'node:net';
 
 export const actions = {
-    print: async ({ request }) => {
-        const data = await request.formData();
-        const label_id = data.get("label_id");
-        const qty: number = Number(data.get("qty") ?? "1");
-        let label: string = "";
+	print: async ({ request }) => {
+		const data = await request.formData();
+		const label_id = data.get('label_id');
+		const qty: number = Number(data.get('qty') ?? '1');
+		let label: string = '';
 
-        switch (label_id) {
-            case "frysdag":
-                console.log("Printing frysdag label.");
-                label = labelFrysdag(qty);
-                console.log(label);
-                //zplCommand(label);
-                break;
-            case "today":
-                console.log("Printing today label.");
-                label = labelToday(qty);
-                console.log(label);
-                zplCommand(label);
-                break;
-            case "experiment": 
-                console.log("Experiments running");
-                label = labelExperiment(qty);
-                console.log(label);
-                //zplCommand(label);
-                break;
-            default:
-                console.log(`Unsupported label: ${label_id}`);
-        }
-    }
+		switch (label_id) {
+			case 'frysdag':
+				console.log('Printing frysdag label.');
+				label = labelFrysdag(qty);
+				console.log(label);
+				//zplCommand(label);
+				break;
+			case 'today':
+				console.log('Printing today label.');
+				label = labelToday(qty);
+				console.log(label);
+				zplCommand(label);
+				break;
+			case 'jonatan':
+				console.log('Printing jonatan label.');
+				label = labelJonatan(qty);
+				console.log(label);
+				zplCommand(label);
+				break;
+			case 'isabelle':
+				console.log('Printing isabelle label.');
+				label = labelIsabelle(qty);
+				console.log(label);
+				zplCommand(label);
+				break;
+			case 'experiment':
+				console.log('Experiments running');
+				label = labelExperiment(qty);
+				console.log(label);
+				//zplCommand(label);
+				break;
+			default:
+				console.log(`Unsupported label: ${label_id}`);
+		}
+	}
 } satisfies Actions;
 
-function labelExperiment(qty = 1){
-    const zplCommand = `
+function labelExperiment(qty = 1) {
+	const zplCommand = `
 ^XA
 ^PQ${qty}
 ^FO50,50
@@ -42,15 +54,14 @@ function labelExperiment(qty = 1){
 ^FDTEST^FS
 ^XZ
 `;
-    return zplCommand;
+	return zplCommand;
 }
 
-
 function labelFrysdag(qty = 1) {
-    const now = new Date();
-    const timestring = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+	const now = new Date();
+	const timestring = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
 
-    const zplCommand = `
+	const zplCommand = `
 ^XA
 ^PQ${qty}
 ^LH16,8
@@ -63,14 +74,14 @@ function labelFrysdag(qty = 1) {
 ^LH0,0
 ^XZ
 `;
-    return zplCommand;
+	return zplCommand;
 }
 
 function labelToday(qty = 1) {
-    const now = new Date();
-    const timestring = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+	const now = new Date();
+	const timestring = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
 
-    const zplCommand = `
+	const zplCommand = `
 CT~~CD,~CC^~CT~
 ^XA
 ~TA000
@@ -106,29 +117,71 @@ CT~~CD,~CC^~CT~
 ^CI27
 ^XZ
 `;
-    return zplCommand;
+	return zplCommand;
 }
 
+function labelJonatan(qty: number) {
+	return labelTwoline('Jonatan Gezelius', '+46 (0)73-58 48 690', qty);
+}
+
+function labelIsabelle(qty: number) {
+	return labelTwoline('Isabelle Fägerman', '+46 (0)73-316 35 80', qty);
+}
+
+function labelTwoline(firstLine: string, secondLine: string, qty: number) {
+	const zplCommand = `
+CT~~CD,~CC^~CT~
+^XA
+~TA000
+~JSN
+^LT8
+^MNW
+^MTT
+^PON
+^PMN
+^LH0,0
+^JMA
+^PR6,6
+~SD19
+^JUS
+^LRN
+^CI27
+^PA0,1,1,0
+^XZ
+
+^XA
+^PQ${qty}
+^MMT
+^PW330
+^LL102
+^LS0
+^FT5,40^A0N,31,30^FB325,1,8,C^FH\\^CI28^FD${firstLine}\\5C&^FS^CI27
+^FT5,79^A0N,31,30^FB325,1,8,C^FH\\^CI28^FD${secondLine}\\5C&^FS^CI27
+^XZ
+
+`;
+	return zplCommand;
+}
 
 function zplCommand(zplCommand: string) {
-    const printerHost = 'd6j235201761.home.arpa';
-    const printerPort = 9100;
+	const printerHost = 'd6j235201761.home.arpa';
+	const printerPort = 9100;
 
-    const client = new net.Socket();
+	const client = new net.Socket();
 
-    client.connect(printerPort, printerHost, () => {
-        console.log('Connected to printer!');
-        client.write(zplCommand, 'utf8', () => {
-            console.log('Sent ZPL to printer!');
-            client.end();
-        });
-    });
+	client.connect(printerPort, printerHost, () => {
+		console.log('Connected to printer!');
+		client.write(zplCommand, 'utf8', () => {
+			console.log('Sent ZPL to printer!');
+			client.end();
+		});
+	});
 
-    client.on('error', (err: any) => {
-        console.error('Connection failed:', err);
-    });
+	client.on('error', (err: any) => {
+		console.error('Connection failed:', err);
+	});
 
-    client.on('close', () => {
-        console.log('Connection closed');
-    });
+	client.on('close', () => {
+		console.log('Connection closed');
+	});
 }

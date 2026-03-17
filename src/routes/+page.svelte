@@ -10,7 +10,9 @@
 
 	const etiketter = [
 		{ display: 'Frysdag', label_id: 'frysdag' },
-		{ display: 'Dagens datum bara', label_id: 'today' }
+		{ display: 'Dagens datum bara', label_id: 'today' },
+		{ display: 'Jonatan + nummer', label_id: 'jonatan' },
+		{ display: 'Isabelle + nummer', label_id: 'isabelle' }
 		//{ display: 'Experiment', label_id: 'experiment' }
 	];
 </script>
@@ -21,11 +23,11 @@
 		<Card.Description>Din etikettstation i webben</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-6">
 			<p>
 				Antal etiketter: <span class="text-right font-bold">{qty}</span>
 			</p>
-			<Slider type="single" bind:value={qty} min={1} max={10} />
+			<Slider class="" type="single" bind:value={qty} min={1} max={10} />
 
 			<div class="flex flex-col gap-2">
 				{#each etiketter as etikett (etikett.label_id)}
