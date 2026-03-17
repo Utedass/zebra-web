@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Card from '$lib/components/ui/card';
+	import { toast } from 'svelte-sonner';
 	//let { form }: PageProps = $props();
 
 	let qty = $state(1);
@@ -41,8 +42,12 @@
 		-->
 						<input type="hidden" name="label_id" value={etikett.label_id} />
 						<input type="hidden" name="qty" value={qty} />
-						<Button class="w-full py-7" variant="outline" type="submit" aria-label="Submit"
-							>{@html etikett.display}</Button
+						<Button
+							class="w-full py-7"
+							variant="outline"
+							type="submit"
+							aria-label="Submit"
+							onclick={() => toast('Label sent to printer!')}>{@html etikett.display}</Button
 						>
 					</form>
 				{/each}
