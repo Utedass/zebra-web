@@ -13,7 +13,7 @@ export const actions = {
 				console.log('Printing frysdag label.');
 				label = labelFrysdag(qty);
 				console.log(label);
-				//zplCommand(label);
+				zplCommand(label);
 				break;
 			case 'today':
 				console.log('Printing today label.');
