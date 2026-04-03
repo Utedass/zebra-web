@@ -8,6 +8,6 @@
 </script>
 
 <ModeWatcher />
-<Toaster />
+<Toaster position="bottom-center" richColors />
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 {@render children()}

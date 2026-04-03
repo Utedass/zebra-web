@@ -1,3 +1,4 @@
+import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import net from 'node:net';
 
@@ -12,36 +13,47 @@ export const actions = {
 			case 'frysdag':
 				console.log('Printing frysdag label.');
 				label = labelFrysdag(qty);
-				console.log(label);
-				zplCommand(label);
 				break;
 			case 'today':
 				console.log('Printing today label.');
 				label = labelToday(qty);
-				console.log(label);
-				zplCommand(label);
 				break;
 			case 'jonatan':
 				console.log('Printing jonatan label.');
 				label = labelJonatan(qty);
-				console.log(label);
-				zplCommand(label);
 				break;
 			case 'isabelle':
 				console.log('Printing isabelle label.');
 				label = labelIsabelle(qty);
-				console.log(label);
-				zplCommand(label);
 				break;
 			case 'experiment':
+				// Keep for experimenting with label generation
 				console.log('Experiments running');
 				label = labelExperiment(qty);
 				console.log(label);
 				//zplCommand(label);
-				break;
+				return { success: true };
+			case 'success':
+				console.log('Experiments running, success');
+				return { success: true };
+			case 'fail':
+				console.log('Experiments running, fail');
+				return fail(400, { fail: true, error: 'Error text goes here' });
 			default:
 				console.log(`Unsupported label: ${label_id}`);
+				return fail(404, { fail: true, error: 'Label does not exist' });
 		}
+
+		console.log(label);
+		const ok = await zplCommand(label);
+
+		console.log(`Retunerat från utskrift ${ok}`);
+
+		if (!ok) {
+			return fail(503, { fail: true, error: 'Kunde inte skriva ut etiketten' });
+		}
+
+		return { success: true };
 	}
 } satisfies Actions;
 
@@ -167,21 +179,42 @@ function zplCommand(zplCommand: string) {
 	const printerHost = 'd6j235201761.home.arpa';
 	const printerPort = 9100;
 
-	const client = new net.Socket();
+	return new Promise((resolve) => {
+		let success = false;
+		let done = false;
+		const client = new net.Socket();
 
-	client.connect(printerPort, printerHost, () => {
-		console.log('Connected to printer!');
-		client.write(zplCommand, 'utf8', () => {
-			console.log('Sent ZPL to printer!');
-			client.end();
+		const timeout = setTimeout(() => {
+			if (!done) {
+				console.error('Operation timed out');
+				client.destroy();
+				resolve(false);
+			}
+		}, 1500);
+
+		client.connect(printerPort, printerHost, () => {
+			console.log('Connected to printer!');
+			client.write(zplCommand, 'utf8', () => {
+				console.log('Sent ZPL to printer!');
+				success = true;
+				done = true;
+				clearTimeout(timeout);
+				client.end();
+			});
 		});
-	});
 
-	client.on('error', (err: any) => {
-		console.error('Connection failed:', err);
-	});
+		client.on('error', (err: Error) => {
+			console.error('Connection failed:', err);
+			success = false;
+			done = true;
+			clearTimeout(timeout);
+		});
 
-	client.on('close', () => {
-		console.log('Connection closed');
+		client.on('close', () => {
+			console.log('Connection closed');
+			done = true;
+			clearTimeout(timeout);
+			resolve(success);
+		});
 	});
 }
