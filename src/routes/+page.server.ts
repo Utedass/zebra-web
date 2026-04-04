@@ -35,13 +35,13 @@ export const actions = {
 				return { success: true };
 			case 'success':
 				console.log('Experiments running, success');
-				return { success: true };
+				return { success: true, qty: qty };
 			case 'fail':
 				console.log('Experiments running, fail');
-				return fail(400, { fail: true, error: 'Error text goes here' });
+				return fail(400, { fail: true, error: 'Error text goes here', qty: qty });
 			default:
 				console.log(`Unsupported label: ${label_id}`);
-				return fail(404, { fail: true, error: 'Label does not exist' });
+				return fail(404, { fail: true, error: `Hittade inte etikett: ${label_id}`, qty: qty });
 		}
 
 		console.log(label);
@@ -50,10 +50,10 @@ export const actions = {
 		console.log(`Retunerat från utskrift ${ok}`);
 
 		if (!ok) {
-			return fail(503, { fail: true, error: 'Kunde inte skriva ut etiketten' });
+			return fail(503, { fail: true, error: 'Misslyckades att skriva ut etikett :(', qty: qty });
 		}
 
-		return { success: true };
+		return { success: true, qty: qty };
 	}
 } satisfies Actions;
 
